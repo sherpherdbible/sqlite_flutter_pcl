@@ -66,6 +66,8 @@ class Tester {
     //Sqlite filepath
     final databasePath = await getTemporaryDatabasePath();
     final connection = SQLiteConnection(path: databasePath);
+    //create table
+    connection.createTable(SqlModel());
     //insert new item;
     var newItem = SqlModel(title: 'Title 1', value: 'Value 1');
     await connection.insert(newItem);
@@ -80,8 +82,7 @@ class Tester {
     connection.deleteAll(SqlModel());
     //Delete table
     connection.deleteTable(SqlModel());
-    //create table
-    connection.createTable(SqlModel());
+    
   }
 }
 
