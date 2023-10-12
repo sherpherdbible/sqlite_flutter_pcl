@@ -1,7 +1,7 @@
 name: sqlite_flutter_pcl
 description: Adding description next.
-version: 0.0.1
-homepage: 
+version: 0.0.2
+homepage: https://github.com/sherpherdbible/sqlite_flutter_pcl
 
 environment:
   sdk: '>=3.1.3 <4.0.0'
