@@ -1,5 +1,5 @@
 # Create table class implements ISQLiteItem
-```
+``` dart
 class SqlModel implements ISQLiteItem {
   int? id;
   String? title;
@@ -43,8 +43,8 @@ class SqlModel implements ISQLiteItem {
 
 ```
 # Create instance of SQLiteConnection
-```
-//Init if SQLiteConnection not initialize when new instance created
+``` dart
+   //Init if SQLiteConnection not initialize when new instance created
     SQLiteConnection.initDatabaseLib();
     //Sqlite filepath
     final databasePath = await getTemporaryDatabasePath();
