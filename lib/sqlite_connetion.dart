@@ -21,15 +21,17 @@ class SQLiteConnection {
     var database = await openDatabase(path, version: 1);
     return database;
   }
-Future<List<ISQLiteItem>> toList(ISQLiteItem item) async {
-  final db = await getOpenDatabase();
-  final tableName = item.getTableName();
-  final List<Map<String, dynamic>> results = await db.query(tableName);
-  // Convert the query results into a list of ISQLiteItem objects
-  final List<ISQLiteItem> items = results.map((map) => item.fromMap(map)).toList();
-  db.close();
-  return items;
-}
+
+  Future<List<ISQLiteItem>> toList(ISQLiteItem item) async {
+    final db = await getOpenDatabase();
+    final tableName = item.getTableName();
+    final List<Map<String, dynamic>> results = await db.query(tableName);
+    // Convert the query results into a list of ISQLiteItem objects
+    final List<ISQLiteItem> items =
+        results.map((map) => item.fromMap(map)).toList();
+    db.close();
+    return items;
+  }
 
   Future<int> insert(ISQLiteItem item) async {
     var db = await getOpenDatabase();
@@ -42,22 +44,40 @@ Future<List<ISQLiteItem>> toList(ISQLiteItem item) async {
     db.close();
     return row;
   }
-  
+
   Future<void> update(ISQLiteItem item) async {
-  final db = await getOpenDatabase();
-  final map = item.toMap();
-  final id = map[item.getPrimaryKeyName()];
+    final db = await getOpenDatabase();
+    final map = item.toMap();
+    final id = map[item.getPrimaryKeyName()];
 
-  if (id != null) {
-    // Perform an update with the same ID
-    await db.update(item.getTableName(), map,
-        where: '${item.getPrimaryKeyName()} = ?', whereArgs: [id]);
-  } else {
-    // Handle the case where ID is null (e.g., insert as a new record or raise an error)
+    if (id != null) {
+      // Perform an update with the same ID
+      await db.update(item.getTableName(), map,
+          where: '${item.getPrimaryKeyName()} = ?', whereArgs: [id]);
+    } else {
+      // Handle the case where ID is null (e.g., insert as a new record or raise an error)
+    }
+    db.close();
   }
-  db.close();
-}
 
+  Future<int> delete(ISQLiteItem item) async {
+    var db = await getOpenDatabase();
+    final primaryKeyValue = item.toMap()[item.getPrimaryKeyName()];
+
+    if (primaryKeyValue != null) {
+      var rowsDeleted = await db.delete(
+        item.getTableName(),
+        where: '${item.getPrimaryKeyName()} = ?',
+        whereArgs: [primaryKeyValue],
+      );
+      db.close();
+      return rowsDeleted;
+    } else {
+      // Handle the case where the primary key is null (e.g., raise an error).
+      db.close();
+      return 0; // Return 0 to indicate that no rows were deleted.
+    }
+  }
 
   Future<void> deleteTable(ISQLiteItem item) async {
     final database = await getOpenDatabase();
@@ -171,48 +191,49 @@ Future<List<ISQLiteItem>> toList(ISQLiteItem item) async {
     return total;
   }
 
-  Future<void> createTable(ISQLiteItem item, {bool autoIncrement = true}) async {
-  final db = await getOpenDatabase();
-  final tableName = item.getTableName();
-  final primaryKey = item.getPrimaryKeyName();
+  Future<void> createTable(ISQLiteItem item,
+      {bool autoIncrement = true}) async {
+    final db = await getOpenDatabase();
+    final tableName = item.getTableName();
+    final primaryKey = item.getPrimaryKeyName();
 
-  final columns = <String>[];
-  final map = item.toMap();
+    final columns = <String>[];
+    final map = item.toMap();
 
-  map.forEach((key, value) {
-    if (key == primaryKey) {
-      if (value is int) {
-        if (autoIncrement) {
-          columns.add('$key INTEGER PRIMARY KEY AUTOINCREMENT');
-        } else {
-          columns.add('$key INTEGER');
+    map.forEach((key, value) {
+      if (key == primaryKey) {
+        if (value is int) {
+          if (autoIncrement) {
+            columns.add('$key INTEGER PRIMARY KEY AUTOINCREMENT');
+          } else {
+            columns.add('$key INTEGER');
+          }
+        } else if (value is String) {
+          columns.add('$key TEXT PRIMARY KEY');
+        } else if (value is Uint8List) {
+          columns.add('$key BLOB'); // Add a BLOB column for byte arrays
         }
-      } else if (value is String) {
-        columns.add('$key TEXT PRIMARY KEY');
-      } else if (value is Uint8List) {
-        columns.add('$key BLOB'); // Add a BLOB column for byte arrays
-      }
-    } else {
-      if (value is int) {
-        columns.add('$key INTEGER');
-      } else if (value is double) {
-        columns.add('$key REAL');
-      } else if (value is bool) {
-        columns.add('$key INTEGER');
-      } else if (value is Uint8List) {
-        columns.add('$key BLOB'); // Add a BLOB column for byte arrays
       } else {
-        columns.add('$key TEXT');
+        if (value is int) {
+          columns.add('$key INTEGER');
+        } else if (value is double) {
+          columns.add('$key REAL');
+        } else if (value is bool) {
+          columns.add('$key INTEGER');
+        } else if (value is Uint8List) {
+          columns.add('$key BLOB'); // Add a BLOB column for byte arrays
+        } else {
+          columns.add('$key TEXT');
+        }
       }
-    }
-  });
+    });
 
-  final createTableQuery = 'CREATE TABLE IF NOT EXISTS $tableName (${columns.join(', ')});';
+    final createTableQuery =
+        'CREATE TABLE IF NOT EXISTS $tableName (${columns.join(', ')});';
 
-  await db.execute(createTableQuery);
-  db.close();
-}
-
+    await db.execute(createTableQuery);
+    db.close();
+  }
 
   //Static methods
   static Future<bool> isValidDatabaseFile(String filePath) async {
