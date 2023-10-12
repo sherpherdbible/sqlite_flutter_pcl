@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqlite_flutter_pcl/sqlite_flutter_pcl.dart';
+//flutter pub publish --dry-run
+//flutter pub publish
 
 void main() async {
   test('adds one to input values', () {
