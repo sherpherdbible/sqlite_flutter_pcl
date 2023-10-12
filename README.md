@@ -49,6 +49,8 @@ class SqlModel implements ISQLiteItem {
     //Sqlite filepath
     final databasePath = await getTemporaryDatabasePath();
     final connection = SQLiteConnection(path: databasePath);
+    //create table
+    connection.createTable(SqlModel());
     //insert new item;
     var newItem = SqlModel(title: 'Title 1', value: 'Value 1');
     await connection.insert(newItem);
@@ -63,7 +65,5 @@ class SqlModel implements ISQLiteItem {
     connection.deleteAll(SqlModel());
     //Delete table
     connection.deleteTable(SqlModel());
-    //create table
-    connection.createTable(SqlModel());
 ```
 [pub.dev](https://pub.dev/packages/sqlite_flutter_pcl)
