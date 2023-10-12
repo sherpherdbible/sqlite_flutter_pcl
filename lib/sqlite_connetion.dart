@@ -215,7 +215,7 @@ Future<List<ISQLiteItem>> toList(ISQLiteItem item) async {
 
 
   //Static methods
-  Future<bool> isValidDatabaseFile(String filePath) async {
+  static Future<bool> isValidDatabaseFile(String filePath) async {
     final file = File(filePath);
     if (!(await file.exists())) {
       return false; // File does not exist
