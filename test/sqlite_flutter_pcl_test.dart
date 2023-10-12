@@ -47,8 +47,7 @@ class Tester {
     return path;
   }
 
-  Future<void> insertIntoDatabase(ISQLiteItem item,
-      {bool insert = true}) async {
+  Future<void> insertIntoDatabase(SqlModel item, {bool insert = true}) async {
     final databasePath = await getTemporaryDatabasePath();
     final connection = SQLiteConnection(path: databasePath);
     await connection.createTable(item);
@@ -57,6 +56,30 @@ class Tester {
     } else {
       await connection.update(item);
     }
+  }
+
+  void testVoid() async {
+    //Init if SQLiteConnection not initialize when new instance created
+    SQLiteConnection.initDatabaseLib();
+    //Sqlite filepath
+    final databasePath = await getTemporaryDatabasePath();
+    final connection = SQLiteConnection(path: databasePath);
+    //insert new item;
+    var newItem = SqlModel(title: 'Title 1', value: 'Value 1');
+    await connection.insert(newItem);
+    //retrieve items
+    var items = await connection.toList(SqlModel());
+    //update items
+    for (var item in items) {
+      (item as SqlModel).value = 'Updated';
+      await connection.update(item);
+    }
+    //Delete all table records
+    connection.deleteAll(SqlModel());
+    //Delete table
+    connection.deleteTable(SqlModel());
+    //create table
+    connection.createTable(SqlModel());
   }
 }
 

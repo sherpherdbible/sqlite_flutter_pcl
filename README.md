@@ -1,4 +1,4 @@
-# Sample
+# Create table class implements ISQLiteItem
 ```
 class SqlModel implements ISQLiteItem {
   int? id;
@@ -14,7 +14,7 @@ class SqlModel implements ISQLiteItem {
 
   @override
   int getPrimaryKey() {
-    return id ?? 0;
+    return id;
   }
 
   @override
@@ -44,16 +44,26 @@ class SqlModel implements ISQLiteItem {
 ```
 # Create instance of SQLiteConnection
 ```
-Future<void> insertIntoDatabase(ISQLiteItem item,
-      {bool insert = true}) async {
+//Init if SQLiteConnection not initialize when new instance created
+    SQLiteConnection.initDatabaseLib();
+    //Sqlite filepath
     final databasePath = await getTemporaryDatabasePath();
     final connection = SQLiteConnection(path: databasePath);
-    await connection.createTable(item);
-    if (insert) {
-      await connection.insert(item);
-    } else {
+    //insert new item;
+    var newItem = SqlModel(title: 'Title 1', value: 'Value 1');
+    await connection.insert(newItem);
+    //retrieve items
+    var items = await connection.toList(SqlModel());
+    //update items
+    for (var item in items) {
+      (item as SqlModel).value = 'Updated';
       await connection.update(item);
     }
-  }
+    //Delete all table records
+    connection.deleteAll(SqlModel());
+    //Delete table
+    connection.deleteTable(SqlModel());
+    //create table
+    connection.createTable(SqlModel());
 ```
 [pub.dev](https://pub.dev/packages/sqlite_flutter_pcl)
