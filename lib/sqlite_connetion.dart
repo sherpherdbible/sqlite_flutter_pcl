@@ -26,7 +26,6 @@ class SQLiteConnection {
     // Convert the query results into a list of ISQLiteItem objects
     final List<ISQLiteItem> items =
         results.map((map) => item.fromMap(map)).toList();
-    db.close();
     return items;
   }
 
@@ -38,7 +37,6 @@ class SQLiteConnection {
       map[item.getPrimaryKeyName()] = null;
     }
     var row = await db.insert(item.getTableName(), map);
-    db.close();
     return row;
   }
 
@@ -54,7 +52,6 @@ class SQLiteConnection {
       await db.insert(item.getTableName(), map);
       totalRow++;
     }
-    db.close();
     return totalRow;
   }
 
@@ -70,7 +67,6 @@ class SQLiteConnection {
     } else {
       // Handle the case where ID is null (e.g., insert as a new record or raise an error)
     }
-    db.close();
   }
 
   Future<void> updateAll(List<ISQLiteItem> items) async {
@@ -87,7 +83,6 @@ class SQLiteConnection {
         // Handle the case where ID is null (e.g., insert as a new record or raise an error)
       }
     }
-    db.close();
   }
 
   Future<int> delete(ISQLiteItem item) async {
@@ -104,7 +99,6 @@ class SQLiteConnection {
       // Handle the case where the primary key is null (e.g., raise an error).
       // Return 0 to indicate that no rows were deleted.
     }
-    db.close();
     return rowsDeleted;
   }
 
@@ -126,7 +120,6 @@ class SQLiteConnection {
         // Return 0 to indicate that no rows were deleted.
       }
     }
-    db.close();
     return totalDeleted;
   }
 
@@ -142,7 +135,6 @@ class SQLiteConnection {
     // Reset the auto-increment primary key to 1
     await db.rawUpdate(
         'DELETE FROM sqlite_sequence WHERE name = ?', [item.getTableName()]);
-    db.close();
   }
 
   Future<List<ISQLiteItem>> where(
@@ -155,7 +147,6 @@ class SQLiteConnection {
       where: condition,
       whereArgs: [columnValueOf], // Pass the value as an array
     );
-    db.close();
     results = maps.map((map) => item.fromMap(map)).toList();
     return results;
   }
@@ -181,9 +172,6 @@ class SQLiteConnection {
       where: condition,
       whereArgs: whereArgs,
     );
-
-    db.close();
-
     results = maps.map((map) => item.fromMap(map)).toList();
     return results;
   }
@@ -209,9 +197,6 @@ class SQLiteConnection {
       where: condition,
       whereArgs: whereArgs,
     );
-
-    db.close();
-
     results = maps.map((map) => item.fromMap(map)).toList();
     return results;
   }
@@ -241,9 +226,6 @@ class SQLiteConnection {
       where: condition,
       whereArgs: whereArgs,
     );
-
-    db.close();
-
     results = maps.map((map) => item.fromMap(map)).toList();
     return results;
   }
@@ -270,7 +252,6 @@ class SQLiteConnection {
     var count =
         await db.rawQuery('SELECT COUNT(*) FROM ${item.getTableName()}');
     var total = Sqflite.firstIntValue(count) ?? 0;
-    db.close();
     return total;
   }
 
@@ -334,8 +315,6 @@ class SQLiteConnection {
         [tableName],
       );
     }
-
-    db.close();
   }
 
   //Static methods

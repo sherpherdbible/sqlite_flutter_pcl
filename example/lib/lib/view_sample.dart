@@ -58,7 +58,7 @@ class _ViewSampleState extends State<ViewSample> {
             final databasePath = await getTemporaryDatabasePath();
             final connection = SQLiteConnection(path: databasePath);
             var retrievedItems = await connection.toList(SqlModel());
-            await connection.deleteItems(retrievedItems);
+            await connection.deleteAll(retrievedItems);
             retrievedItems = await connection.toList(SqlModel());
             setState(() {
               sampleItems = retrievedItems; // Update the list after retrieval
