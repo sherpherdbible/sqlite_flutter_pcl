@@ -11,10 +11,7 @@ class SQLiteConnection {
     _initLib();
   }
   void _initLib() {
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
-    }
+    initDatabaseLib();
   }
 
   Future<Database> getOpenDatabase() async {
@@ -324,6 +321,20 @@ class SQLiteConnection {
         'CREATE TABLE IF NOT EXISTS $tableName (${columns.join(', ')});';
 
     await db.execute(createTableQuery);
+    //start primarykey to 1
+    // Check the current sequence value for the table
+    var currentSeq = Sqflite.firstIntValue(
+            await db.rawQuery('PRAGMA table_info($tableName)')) ??
+        0;
+
+    // If the current sequence value is not 1, reset it to 1
+    if (currentSeq < 1) {
+      await db.rawUpdate(
+        'UPDATE sqlite_sequence SET seq = 1 WHERE name = ?',
+        [tableName],
+      );
+    }
+
     db.close();
   }
 
