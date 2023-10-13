@@ -212,6 +212,12 @@ class SQLiteConnection {
           columns.add('$key TEXT PRIMARY KEY');
         } else if (value is Uint8List) {
           columns.add('$key BLOB'); // Add a BLOB column for byte arrays
+        } else {
+          if (autoIncrement) {
+            columns.add('$key INTEGER PRIMARY KEY AUTOINCREMENT');
+          } else {
+            columns.add('$key INTEGER');
+          }
         }
       } else {
         if (value is int) {
