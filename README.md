@@ -55,12 +55,29 @@ class SqlModel implements ISQLiteItem {
     var newItem = SqlModel(title: 'Title 1', value: 'Value 1');
     await connection.insert(newItem);
     //retrieve items
-    var items = await connection.toList(SqlModel());
+    var isqliteItems = await connection.toList(SqlModel());
+    //convert to type list
+    var items = isqliteItems.whereType<SqlModel>().toList();
     //update items
     for (var item in items) {
-      (item as SqlModel).value = 'Updated';
+      item.value = 'Updated';
       await connection.update(item);
     }
+    //OR
+    await connection.updateAll(items);
+    //delete items
+    await connection.deleteAll(items);
+    //query single value
+    var queryItems = await connection.where(SqlModel(), 'title', 'Title 1');
+    //search items
+    var searchItems = await connection.search(SqlModel(), 'title', 'title 1');
+    //query with multiple columns
+    Map<String, dynamic> columnNameAndValues = {
+      'title': 'Title 1',
+      'value': 'Value 2',
+    };
+    var results = await connection.whereOr(SqlModel(), columnNameAndValues);
+
     //Delete all table records
     connection.deleteRecords(SqlModel());
     //Delete table
