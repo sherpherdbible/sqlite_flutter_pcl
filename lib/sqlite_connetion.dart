@@ -45,6 +45,22 @@ class SQLiteConnection {
     return row;
   }
 
+  Future<int> insertAll(List<ISQLiteItem> items) async {
+    var db = await getOpenDatabase();
+    var totalRow = 0;
+    for (var item in items) {
+      var map = item.toMap();
+      if (map[item.getPrimaryKeyName()] is int &&
+          map[item.getPrimaryKeyName()] == 0) {
+        map[item.getPrimaryKeyName()] = null;
+      }
+      await db.insert(item.getTableName(), map);
+      totalRow++;
+    }
+    db.close();
+    return totalRow;
+  }
+
   Future<void> update(ISQLiteItem item) async {
     final db = await getOpenDatabase();
     final map = item.toMap();
@@ -60,23 +76,61 @@ class SQLiteConnection {
     db.close();
   }
 
+  Future<void> updateAll(List<ISQLiteItem> items) async {
+    final db = await getOpenDatabase();
+    for (var item in items) {
+      final map = item.toMap();
+      final id = map[item.getPrimaryKeyName()];
+
+      if (id != null) {
+        // Perform an update with the same ID
+        await db.update(item.getTableName(), map,
+            where: '${item.getPrimaryKeyName()} = ?', whereArgs: [id]);
+      } else {
+        // Handle the case where ID is null (e.g., insert as a new record or raise an error)
+      }
+    }
+    db.close();
+  }
+
   Future<int> delete(ISQLiteItem item) async {
     var db = await getOpenDatabase();
     final primaryKeyValue = item.toMap()[item.getPrimaryKeyName()];
-
+    var rowsDeleted = 0;
     if (primaryKeyValue != null) {
-      var rowsDeleted = await db.delete(
+      rowsDeleted = await db.delete(
         item.getTableName(),
         where: '${item.getPrimaryKeyName()} = ?',
         whereArgs: [primaryKeyValue],
       );
-      db.close();
-      return rowsDeleted;
     } else {
       // Handle the case where the primary key is null (e.g., raise an error).
-      db.close();
-      return 0; // Return 0 to indicate that no rows were deleted.
+      // Return 0 to indicate that no rows were deleted.
     }
+    db.close();
+    return rowsDeleted;
+  }
+
+  Future<int> deleteAll(List<ISQLiteItem> items) async {
+    var db = await getOpenDatabase();
+    var totalDeleted = 0;
+    for (var item in items) {
+      final primaryKeyValue = item.toMap()[item.getPrimaryKeyName()];
+
+      if (primaryKeyValue != null) {
+        await db.delete(
+          item.getTableName(),
+          where: '${item.getPrimaryKeyName()} = ?',
+          whereArgs: [primaryKeyValue],
+        );
+        totalDeleted++;
+      } else {
+        // Handle the case where the primary key is null (e.g., raise an error).
+        // Return 0 to indicate that no rows were deleted.
+      }
+    }
+    db.close();
+    return totalDeleted;
   }
 
   Future<void> deleteTable(ISQLiteItem item) async {
@@ -85,7 +139,7 @@ class SQLiteConnection {
     database.close();
   }
 
-  Future<void> deleteAll(ISQLiteItem item) async {
+  Future<void> deleteRecords(ISQLiteItem item) async {
     final db = await getOpenDatabase();
     await db.rawDelete('DELETE FROM ${item.getTableName()}');
     // Reset the auto-increment primary key to 1

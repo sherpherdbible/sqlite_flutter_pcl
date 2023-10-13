@@ -27,7 +27,7 @@ class Tester {
     final databasePath = await getTemporaryDatabasePath();
     final connection = SQLiteConnection(path: databasePath);
     if (_status == "insert") {
-      await connection.deleteAll(SqlModel());
+      await connection.deleteRecords(SqlModel());
       for (final item in sampleDataInsert) {
         await insertIntoDatabase(item);
       }
@@ -79,7 +79,7 @@ class Tester {
       await connection.update(item);
     }
     //Delete all table records
-    connection.deleteAll(SqlModel());
+    connection.deleteRecords(SqlModel());
     //Delete table
     connection.deleteTable(SqlModel());
     

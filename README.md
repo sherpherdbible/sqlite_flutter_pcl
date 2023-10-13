@@ -62,7 +62,7 @@ class SqlModel implements ISQLiteItem {
       await connection.update(item);
     }
     //Delete all table records
-    connection.deleteAll(SqlModel());
+    connection.deleteRecords(SqlModel());
     //Delete table
     connection.deleteTable(SqlModel());
 ```

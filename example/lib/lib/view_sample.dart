@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sqlite_flutter_pcl/sqlite_connetion.dart';
 
-
 import 'path_helper.dart';
 import 'sql_model.dart';
 
@@ -14,7 +13,7 @@ class ViewSample extends StatefulWidget {
 
 class _ViewSampleState extends State<ViewSample> {
   List<ISQLiteItem> sampleItems = [];
-
+  int updateCounter = 0;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -34,9 +33,12 @@ class _ViewSampleState extends State<ViewSample> {
             for (var item in sampleItems) {
               await connection.insert(item); // Await here
             }
-            setState(() {});
+            final retrievedItems = await connection.toList(SqlModel());
+            setState(() {
+              sampleItems = retrievedItems;
+            });
           },
-          child: const Text('Insert'),
+          child: const Text('Insert Items'),
         ),
         OutlinedButton(
           onPressed: () async {
@@ -48,7 +50,38 @@ class _ViewSampleState extends State<ViewSample> {
               sampleItems = retrievedItems; // Update the list after retrieval
             });
           },
-          child: const Text('Retrieve'),
+          child: const Text('Retrieve Items'),
+        ),
+        OutlinedButton(
+          onPressed: () async {
+            final databasePath = await getTemporaryDatabasePath();
+            final connection = SQLiteConnection(path: databasePath);
+            var retrievedItems = await connection.toList(SqlModel());
+            await connection.deleteItems(retrievedItems);
+            retrievedItems = await connection.toList(SqlModel());
+            setState(() {
+              sampleItems = retrievedItems; // Update the list after retrieval
+            });
+          },
+          child: const Text('Delete Items'),
+        ),
+        OutlinedButton(
+          onPressed: () async {
+            final databasePath = await getTemporaryDatabasePath();
+            final connection = SQLiteConnection(path: databasePath);
+            var retrievedItems = await connection.toList(SqlModel());
+            for (var item in retrievedItems) {
+              (item as SqlModel).value = 'Updated $updateCounter';
+              await connection.update(item);
+            }
+            updateCounter++;
+
+            retrievedItems = await connection.toList(SqlModel());
+            setState(() {
+              sampleItems = retrievedItems; // Update the list after retrieval
+            });
+          },
+          child: const Text('Update Items'),
         ),
         Expanded(
           child: ListView.builder(
