@@ -219,6 +219,38 @@ class SQLiteConnection {
     return results;
   }
 
+  Future<List<ISQLiteItem>> whereSearchOr(
+    ISQLiteItem item,
+    Map<String, dynamic> columnNameAndValues,
+  ) async {
+    String tableName = item.getTableName();
+    List<ISQLiteItem> results = [];
+    var db = await getOpenDatabase();
+
+    List<String> whereConditions = [];
+    List<dynamic> whereArgs = [];
+
+    columnNameAndValues.forEach((columnName, columnValue) {
+      // Modify the condition to use LIKE for searching
+      whereConditions.add('$columnName LIKE ?');
+      // Modify the whereArgs to use '%' for wildcard search
+      whereArgs.add('%$columnValue%');
+    });
+
+    String condition = whereConditions.join(' OR ');
+
+    var maps = await db.query(
+      tableName,
+      where: condition,
+      whereArgs: whereArgs,
+    );
+
+    db.close();
+
+    results = maps.map((map) => item.fromMap(map)).toList();
+    return results;
+  }
+
   Future<List<ISQLiteItem>> search(
       ISQLiteItem item, String columnName, String queryText,
       {int? limit}) async {
