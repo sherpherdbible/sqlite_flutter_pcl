@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:sqlite_flutter_pcl/sqlite_flutter_pcl.dart';
 
@@ -92,8 +91,8 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: const ViewSample(),
-      
+      body: const Center(child: ViewSample()),
+
       // This trailing comma makes auto-formatting nicer for build methods.
     );
   }

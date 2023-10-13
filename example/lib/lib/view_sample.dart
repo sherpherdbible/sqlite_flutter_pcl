@@ -18,6 +18,7 @@ class _ViewSampleState extends State<ViewSample> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        const SizedBox(height: 30,),
         OutlinedButton(
           onPressed: () async {
             sampleItems = [
