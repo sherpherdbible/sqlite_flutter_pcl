@@ -201,7 +201,35 @@ class SQLiteConnection {
     return results;
   }
 
-  Future<List<ISQLiteItem>> whereSearchOr(
+  /// Performs a case-sensitive search in multiple columns of an SQLite table with AND condition.
+  ///
+  /// This method searches for the specified values in the given [columnNameAndValues]
+  /// of the [tableName] and returns a list of items that match all the search criteria.
+  /// It uses the LIKE operator for searching.
+  ///
+  /// Parameters:
+  /// - [item]: An instance of ISQLiteItem representing the database table schema.
+  /// - [columnNameAndValues]: A map of column names and values to search for.
+  ///
+  /// Returns a list of ISQLiteItem objects that match all the search criteria.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// List<ISQLiteItem> searchResults = await whereSearchAnd(
+  ///   MyDatabaseItem(), // Replace with your ISQLiteItem implementation
+  ///   {
+  ///     'title': 'flutter',
+  ///     'category': 'mobile',
+  ///   },
+  /// );
+  ///
+  /// for (var result in searchResults) {
+  ///   print(result.toString());
+  /// }
+  /// ```
+
+  Future<List<ISQLiteItem>> whereSearchAnd(
     ISQLiteItem item,
     Map<String, dynamic> columnNameAndValues,
   ) async {
@@ -219,6 +247,118 @@ class SQLiteConnection {
       whereArgs.add('%$columnValue%');
     });
 
+    String condition = whereConditions.join(' AND ');
+
+    var maps = await db.query(
+      tableName,
+      where: condition,
+      whereArgs: whereArgs,
+    );
+    results = maps.map((map) => item.fromMap(map)).toList();
+    return results;
+  }
+
+  /// Performs a search in multiple columns of an SQLite table with exact matching (no "LIKE" operator)
+  /// and an "AND" condition.
+  ///
+  /// This method searches for the specified exact values in the given [columnNameAndValues] of the
+  /// [tableName] and returns a list of items that match all the search criteria.
+  ///
+  /// Parameters:
+  /// - [item]: An instance of ISQLiteItem representing the database table schema.
+  /// - [columnNameAndValues]: A map of column names and exact values to search for.
+  ///
+  /// Returns a list of ISQLiteItem objects that match all the search criteria.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// List<ISQLiteItem> searchResults = await whereSearchExactAnd(
+  ///   MyDatabaseItem(), // Replace with your ISQLiteItem implementation
+  ///   {
+  ///     'title': 'Flutter',
+  ///     'category': 'Mobile',
+  ///   },
+  /// );
+  ///
+  /// for (var result in searchResults) {
+  ///   print(result.toString());
+  /// }
+  /// ```
+
+  Future<List<ISQLiteItem>> whereSearchExactAnd(
+    ISQLiteItem item,
+    Map<String, dynamic> columnNameAndValues,
+  ) async {
+    String tableName = item.getTableName();
+    List<ISQLiteItem> results = [];
+    var db = await getOpenDatabase();
+
+    List<String> whereConditions = [];
+    List<dynamic> whereArgs = [];
+
+    columnNameAndValues.forEach((columnName, columnValue) {
+      // Modify the condition to use = for exact matching
+      whereConditions.add('$columnName = ?');
+      whereArgs.add(columnValue);
+    });
+
+    String condition = whereConditions.join(' AND ');
+
+    var maps = await db.query(
+      tableName,
+      where: condition,
+      whereArgs: whereArgs,
+    );
+    results = maps.map((map) => item.fromMap(map)).toList();
+    return results;
+  }
+
+  /// Performs a case-insensitive search in multiple columns of an SQLite table.
+  ///
+  /// This method searches for the specified query in the given [columnNames] of the
+  /// [tableName] and returns a list of items that match the search criteria. It uses
+  /// the LIKE operator for searching and COLLATE NOCASE for case-insensitivity.
+  ///
+  /// Parameters:
+  /// - [item]: An instance of ISQLiteItem representing the database table schema.
+  /// - [columnNames]: A list of column names to search in.
+  /// - [query]: The search query to match against the specified columns.
+  ///
+  /// Returns a list of ISQLiteItem objects that match the search criteria.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// List<ISQLiteItem> searchResults = await whereSearchOr(
+  ///   MyDatabaseItem(), // Replace with your ISQLiteItem implementation
+  ///   ['title', 'description', 'author'],
+  ///   'flutter',
+  /// );
+  ///
+  /// for (var result in searchResults) {
+  ///   print(result.toString());
+  /// }
+  /// ```
+
+  Future<List<ISQLiteItem>> whereSearchOr(
+    ISQLiteItem item,
+    List<String> columnNames,
+    String query,
+  ) async {
+    String tableName = item.getTableName();
+    List<ISQLiteItem> results = [];
+    var db = await getOpenDatabase();
+
+    List<String> whereConditions = [];
+    List<dynamic> whereArgs = [];
+
+    // Modify the condition to use LIKE for searching and COLLATE NOCASE for case-insensitivity
+    for (var columnName in columnNames) {
+      whereConditions.add('$columnName LIKE ? COLLATE NOCASE');
+      whereArgs.add('%$query%');
+    }
+
     String condition = whereConditions.join(' OR ');
 
     var maps = await db.query(
@@ -230,8 +370,37 @@ class SQLiteConnection {
     return results;
   }
 
+  /// Performs a case-insensitive search in a specified column of an SQLite table.
+  ///
+  /// This method searches for the specified [query] in the [columnName] of the [tableName] and returns
+  /// a list of items that match the search criteria. It uses the LIKE operator for searching and
+  /// COLLATE NOCASE for case-insensitivity.
+  ///
+  /// Parameters:
+  /// - [item]: An instance of ISQLiteItem representing the database table schema.
+  /// - [columnName]: The name of the column to search in.
+  /// - [query]: The search query to match against the specified column.
+  /// - [limit]: (Optional) The maximum number of results to return.
+  ///
+  /// Returns a list of ISQLiteItem objects that match the search criteria.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// List<ISQLiteItem> searchResults = await search(
+  ///   MyDatabaseItem(), // Replace with your ISQLiteItem implementation
+  ///   'title',
+  ///   'flutter',
+  ///   limit: 10,
+  /// );
+  ///
+  /// for (var result in searchResults) {
+  ///   print(result.toString());
+  /// }
+  /// ```
+
   Future<List<ISQLiteItem>> search(
-      ISQLiteItem item, String columnName, String queryText,
+      ISQLiteItem item, String columnName, String query,
       {int? limit}) async {
     var database = await getOpenDatabase();
     String table = item.getTableName();
@@ -239,8 +408,8 @@ class SQLiteConnection {
     var maps = await database.query(
       table,
       columns: null, // Fetch all columns
-      where: "$columnName LIKE ?",
-      whereArgs: ['%$queryText%'],
+      where: "$columnName LIKE ? COLLATE NOCASE",
+      whereArgs: ['%$query%'],
       limit: limit,
     );
     results = maps.map((map) => item.fromMap(map)).toList();
