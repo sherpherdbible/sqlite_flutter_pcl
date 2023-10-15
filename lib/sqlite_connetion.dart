@@ -138,7 +138,7 @@ class SQLiteConnection {
   }
 
   Future<List<ISQLiteItem>> where(
-      ISQLiteItem item, String columnName, String columnValueOf) async {
+      ISQLiteItem item, String columnName, String columnValueOf, {int? limit}) async {
     String condition = '$columnName = ?';
     List<ISQLiteItem> results = [];
     var db = await getOpenDatabase();
@@ -146,13 +146,14 @@ class SQLiteConnection {
       item.getTableName(),
       where: condition,
       whereArgs: [columnValueOf], // Pass the value as an array
+      limit: limit,
     );
     results = maps.map((map) => item.fromMap(map)).toList();
     return results;
   }
 
   Future<List<ISQLiteItem>> whereAnd(
-      ISQLiteItem item, Map<String, dynamic> columnNameAndValues) async {
+      ISQLiteItem item, Map<String, dynamic> columnNameAndValues, {int? limit}) async {
     String tableName = item.getTableName();
     List<ISQLiteItem> results = [];
     var db = await getOpenDatabase();
@@ -171,13 +172,14 @@ class SQLiteConnection {
       tableName,
       where: condition,
       whereArgs: whereArgs,
+      limit: limit,
     );
     results = maps.map((map) => item.fromMap(map)).toList();
     return results;
   }
 
   Future<List<ISQLiteItem>> whereOr(
-      ISQLiteItem item, Map<String, dynamic> columnNameAndValues) async {
+      ISQLiteItem item, Map<String, dynamic> columnNameAndValues, {int? limit}) async {
     String tableName = item.getTableName();
     List<ISQLiteItem> results = [];
     var db = await getOpenDatabase();
@@ -196,6 +198,7 @@ class SQLiteConnection {
       tableName,
       where: condition,
       whereArgs: whereArgs,
+      limit: limit,
     );
     results = maps.map((map) => item.fromMap(map)).toList();
     return results;
@@ -231,7 +234,7 @@ class SQLiteConnection {
 
   Future<List<ISQLiteItem>> whereSearchAnd(
     ISQLiteItem item,
-    Map<String, dynamic> columnNameAndValues,
+    Map<String, dynamic> columnNameAndValues, {int? limit}
   ) async {
     String tableName = item.getTableName();
     List<ISQLiteItem> results = [];
@@ -253,6 +256,7 @@ class SQLiteConnection {
       tableName,
       where: condition,
       whereArgs: whereArgs,
+      limit: limit,
     );
     results = maps.map((map) => item.fromMap(map)).toList();
     return results;
@@ -288,7 +292,7 @@ class SQLiteConnection {
 
   Future<List<ISQLiteItem>> whereSearchExactAnd(
     ISQLiteItem item,
-    Map<String, dynamic> columnNameAndValues,
+    Map<String, dynamic> columnNameAndValues, {int? limit}
   ) async {
     String tableName = item.getTableName();
     List<ISQLiteItem> results = [];
@@ -309,6 +313,7 @@ class SQLiteConnection {
       tableName,
       where: condition,
       whereArgs: whereArgs,
+      limit: limit,
     );
     results = maps.map((map) => item.fromMap(map)).toList();
     return results;
@@ -344,7 +349,7 @@ class SQLiteConnection {
   Future<List<ISQLiteItem>> whereSearchOr(
     ISQLiteItem item,
     List<String> columnNames,
-    String query,
+    String query, {int? limit}
   ) async {
     String tableName = item.getTableName();
     List<ISQLiteItem> results = [];
@@ -365,6 +370,7 @@ class SQLiteConnection {
       tableName,
       where: condition,
       whereArgs: whereArgs,
+      limit: limit,
     );
     results = maps.map((map) => item.fromMap(map)).toList();
     return results;
@@ -477,7 +483,7 @@ class SQLiteConnection {
             await db.rawQuery('PRAGMA table_info($tableName)')) ??
         0;
 
-    // If the current sequence value is not 1, reset it to 1
+    // If the current sequence value is 0, reset it to 1
     if (currentSeq < 1) {
       await db.rawUpdate(
         'UPDATE sqlite_sequence SET seq = 1 WHERE name = ?',
