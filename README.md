@@ -1,5 +1,6 @@
 # Create table class implements ISQLiteItem
-``` dart
+
+```dart
 class SqlModel implements ISQLiteItem {
   int? id;
   String? title;
@@ -18,17 +19,17 @@ class SqlModel implements ISQLiteItem {
   }
 
   @override
+  String getPrimaryKeyName() {
+    return 'id';
+  }
+
+  @override
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'title': title,
       'value': value,
     };
-  }
-
-  @override
-  String getPrimaryKeyName() {
-    return 'id';
   }
 
   @override
@@ -42,8 +43,10 @@ class SqlModel implements ISQLiteItem {
 }
 
 ```
+
 # Create instance of SQLiteConnection
-``` dart
+
+```dart
    //Init if SQLiteConnection not initialize when new instance created
     SQLiteConnection.initDatabaseLib();
     //Sqlite filepath
@@ -71,16 +74,13 @@ class SqlModel implements ISQLiteItem {
     var queryItems = await connection.where(SqlModel(), 'title', 'Title 1');
     //search items
     var searchItems = await connection.search(SqlModel(), 'title', 'title 1');
-    //query with multiple columns
-    Map<String, dynamic> columnNameAndValues = {
-      'title': 'Title 1',
-      'value': 'Value 2',
-    };
-    var results = await connection.whereOr(SqlModel(), columnNameAndValues);
+    //search by multiple columns with single query
+    var results = await connection.whereSearchOr(SqlModel(), ['title', 'value'], query);
 
     //Delete all table records
     connection.deleteRecords(SqlModel());
     //Delete table
     connection.deleteTable(SqlModel());
 ```
+
 [pub.dev](https://pub.dev/packages/sqlite_flutter_pcl)
