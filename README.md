@@ -15,7 +15,7 @@ class SqlModel implements ISQLiteItem {
 
   @override
   int getPrimaryKey() {
-    return id;
+    return id ?? 0;
   }
 
   @override
