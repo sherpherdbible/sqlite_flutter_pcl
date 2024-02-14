@@ -2,6 +2,12 @@
 
 ```dart
 class SqlModel implements ISQLiteItem {
+  static const String tableName = 'sql_model';
+  static const String tableId = 'id';
+  static const String tableTitle = 'title';
+  static const String tableValue = 'value';
+
+
   int? id;
   String? title;
   String? value;
@@ -10,7 +16,7 @@ class SqlModel implements ISQLiteItem {
 
   @override
   String getTableName() {
-    return 'sql_model';
+    return tableName;
   }
 
   @override
@@ -19,25 +25,25 @@ class SqlModel implements ISQLiteItem {
   }
 
   @override
-  String getPrimaryKeyName() {
-    return 'id';
+  Map<String, dynamic> toMap() {
+    return {
+      tableId: id,
+      tableTitle: title,
+      tableValue: value,
+    };
   }
 
   @override
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'value': value,
-    };
+  String getPrimaryKeyName() {
+    return tableId;
   }
 
   @override
   ISQLiteItem fromMap(Map<String, dynamic> map) {
     return SqlModel(
-      id: map['id'],
-      title: map['title'],
-      value: map['value'],
+      id: map[tableId],
+      title: map[tableTitle],
+      value: map[tableValue],
     );
   }
 }
