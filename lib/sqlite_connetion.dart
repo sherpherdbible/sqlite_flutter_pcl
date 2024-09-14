@@ -29,6 +29,23 @@ class SQLiteConnection {
     return items;
   }
 
+  Future<List<ISQLiteItem>> getRandomItems(ISQLiteItem item, int count) async {
+    final db = await getOpenDatabase();
+    final tableName = item.getTableName();
+
+    // Query the table and order by random, limit by the given count
+    final List<Map<String, dynamic>> results = await db.rawQuery(
+      'SELECT * FROM $tableName ORDER BY RANDOM() LIMIT ?',
+      [count], // Use parameterized queries to avoid SQL injection
+    );
+
+    // Convert the query results into a list of ISQLiteItem objects
+    final List<ISQLiteItem> items =
+        results.map((map) => item.fromMap(map)).toList();
+
+    return items;
+  }
+
   Future<int> insert(ISQLiteItem item) async {
     var db = await getOpenDatabase();
     var map = item.toMap();
@@ -138,7 +155,8 @@ class SQLiteConnection {
   }
 
   Future<List<ISQLiteItem>> where(
-      ISQLiteItem item, String columnName, String columnValueOf, {int? limit}) async {
+      ISQLiteItem item, String columnName, String columnValueOf,
+      {int? limit}) async {
     String condition = '$columnName = ?';
     List<ISQLiteItem> results = [];
     var db = await getOpenDatabase();
@@ -153,7 +171,8 @@ class SQLiteConnection {
   }
 
   Future<List<ISQLiteItem>> whereAnd(
-      ISQLiteItem item, Map<String, dynamic> columnNameAndValues, {int? limit}) async {
+      ISQLiteItem item, Map<String, dynamic> columnNameAndValues,
+      {int? limit}) async {
     String tableName = item.getTableName();
     List<ISQLiteItem> results = [];
     var db = await getOpenDatabase();
@@ -179,7 +198,8 @@ class SQLiteConnection {
   }
 
   Future<List<ISQLiteItem>> whereOr(
-      ISQLiteItem item, Map<String, dynamic> columnNameAndValues, {int? limit}) async {
+      ISQLiteItem item, Map<String, dynamic> columnNameAndValues,
+      {int? limit}) async {
     String tableName = item.getTableName();
     List<ISQLiteItem> results = [];
     var db = await getOpenDatabase();
@@ -233,9 +253,8 @@ class SQLiteConnection {
   /// ```
 
   Future<List<ISQLiteItem>> whereSearchAnd(
-    ISQLiteItem item,
-    Map<String, dynamic> columnNameAndValues, {int? limit}
-  ) async {
+      ISQLiteItem item, Map<String, dynamic> columnNameAndValues,
+      {int? limit}) async {
     String tableName = item.getTableName();
     List<ISQLiteItem> results = [];
     var db = await getOpenDatabase();
@@ -291,9 +310,8 @@ class SQLiteConnection {
   /// ```
 
   Future<List<ISQLiteItem>> whereSearchExactAnd(
-    ISQLiteItem item,
-    Map<String, dynamic> columnNameAndValues, {int? limit}
-  ) async {
+      ISQLiteItem item, Map<String, dynamic> columnNameAndValues,
+      {int? limit}) async {
     String tableName = item.getTableName();
     List<ISQLiteItem> results = [];
     var db = await getOpenDatabase();
@@ -347,10 +365,8 @@ class SQLiteConnection {
   /// ```
 
   Future<List<ISQLiteItem>> whereSearchOr(
-    ISQLiteItem item,
-    List<String> columnNames,
-    String query, {int? limit}
-  ) async {
+      ISQLiteItem item, List<String> columnNames, String query,
+      {int? limit}) async {
     String tableName = item.getTableName();
     List<ISQLiteItem> results = [];
     var db = await getOpenDatabase();
